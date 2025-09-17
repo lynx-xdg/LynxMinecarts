@@ -2,33 +2,40 @@ package com.lynxxdg.lynxMinecarts;
 
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Minecart;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
-import org.bukkit.event.vehicle.VehicleMoveEvent;
 
-public class Eventhandler implements Listener {
-    public static float VANILLA_MAX = 0.4F;
-    @EventHandler(ignoreCancelled = true)
-    private void onVehicleMovement(VehicleMoveEvent event) {
-        if (event.getVehicle().getType() != EntityType.MINECART)
-            return;
+public class EventHandler implements Listener {
+    private final double defaultSpeed;
+    private final double fastSpeed;
 
-        Minecart minecart = (Minecart) event.getVehicle();
-        if (minecart.isEmpty())
-            return;
-        if (minecart.getPassengers().getFirst().getType() != EntityType.PLAYER)
-            return;
-        minecart.setMaxSpeed(0.4 * 10.0);
+    public EventHandler(double defaultSpeed, double fastSpeed) {
+        this.defaultSpeed = defaultSpeed;
+        this.fastSpeed = fastSpeed;
     }
 
-    @EventHandler(ignoreCancelled = true)
+    public static double ConvertSpeed(double blocksPerSecond) {
+        // convert speed from blocks per second to blocks per tick
+        return blocksPerSecond / 20.0;
+    }
+    @org.bukkit.event.EventHandler(ignoreCancelled = true)
+    private void onVehicleEnter(VehicleEnterEvent event) {
+        // check if a player just entered a minecart
+        if (event.getVehicle().getType() != EntityType.MINECART)
+            return;
+        if (event.getEntered().getType() != EntityType.PLAYER)
+            return;
+        Minecart minecart = (Minecart) event.getVehicle();
+        minecart.setMaxSpeed(ConvertSpeed(this.fastSpeed));
+    }
+
+    @org.bukkit.event.EventHandler(ignoreCancelled = true)
     private void onVehicleExit(VehicleExitEvent event) {
+        // check if the vehicle being left is a minecart (no need to check if left by player)
         if (event.getVehicle().getType() != EntityType.MINECART)
             return;
         Minecart minecart = (Minecart) event.getVehicle();
-        if (minecart.getMaxSpeed() > VANILLA_MAX) {
-            minecart.setMaxSpeed(VANILLA_MAX);
-        }
+        minecart.setMaxSpeed(ConvertSpeed(this.defaultSpeed));
     }
 }
