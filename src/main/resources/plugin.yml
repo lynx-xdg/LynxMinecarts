@@ -1,0 +1,4 @@
+name: LynxMinecarts
+version: '1.0-SNAPSHOT'
+main: com.lynxxdg.lynxMinecarts.LynxMinecarts
+api-version: '1.21'
